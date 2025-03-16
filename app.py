@@ -5,32 +5,37 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import array_to_img, load_img
 import os
 
-# Load the trained generator model (cache to avoid reloading)
+# ✅ Force TensorFlow to use CPU (Render does not have GPU)
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+# ✅ Set correct PORT for Render
+PORT = os.environ.get("PORT", 10000)
+
+# ✅ Load the trained generator model (cached to avoid reloading)
 @st.cache_resource
 def load_generator():
-    return tf.keras.models.load_model("generator.h5")
+    return tf.keras.models.load_model("generator.h5", compile=False)  # Fix: compile=False
 
 generator = load_generator()
 
-# Set latent space size
+# ✅ Set latent space size
 latent_dim = 100
 
-# Streamlit UI
-st.title("✨ Anime Face Generator ")
+# ✅ Streamlit UI
+st.title("✨ Anime Face Generator")
 st.write("Press the button below to generate new AI-created anime faces.")
 
-# Resize sample image
+# ✅ Resize and display sample image if available
 sample_image_path = "sample.png"
 if os.path.exists(sample_image_path):
     sample_img = load_img(sample_image_path, target_size=(200, 125))  
-    st.image(sample_img, caption="Sample Generated Face (Resized)", use_column_width=False)
+    st.image(sample_img, caption="Sample Generated Face (Resized)")  # Fix: use_container_width
 
-
-# Initialize session state for storing generated images
+# ✅ Initialize session state for storing generated images
 if "generated_images" not in st.session_state:
     st.session_state.generated_images = None
 
-# Button to generate new images
+# ✅ Button to generate new images
 if st.button("Generate New Faces 🚀"):
     # Generate random noise
     random_noise = tf.random.normal([100, latent_dim])
@@ -42,7 +47,7 @@ if st.button("Generate New Faces 🚀"):
     generated_images = (generated_images * 127.5) + 127.5  
     st.session_state.generated_images = generated_images.numpy().astype("uint8")
 
-# Display the generated images if available
+# ✅ Display the generated images if available
 if st.session_state.generated_images is not None:
     fig, axes = plt.subplots(10, 10, figsize=(8, 8))
     for i in range(100):
